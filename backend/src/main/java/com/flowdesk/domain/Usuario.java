@@ -37,4 +37,5 @@ public class Usuario {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    private String role;
 }

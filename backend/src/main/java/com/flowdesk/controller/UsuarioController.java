@@ -1,5 +1,8 @@
 package com.flowdesk.controller;
 
+import java.util.List;
+
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -29,6 +32,11 @@ public class UsuarioController {
             @RequestParam String email,
             @RequestParam String senha) {
         return service.login(email, senha);
+    }
+
+    @GetMapping
+    public List<Usuario> listar() {
+        return service.listar();
     }
 
 }

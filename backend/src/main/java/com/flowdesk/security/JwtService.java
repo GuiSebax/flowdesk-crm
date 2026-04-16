@@ -18,10 +18,11 @@ public class JwtService {
         return Keys.hmacShaKeyFor(SECRET.getBytes());
     }
 
-    public String gerarToken(String email, String tenantId) {
+    public String gerarToken(String email, String tenantId, String role) {
         return Jwts.builder()
                 .setSubject(email)
                 .claim("tenantId", tenantId)
+                .claim("role", role)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // 1h
                 .signWith(getKey(), SignatureAlgorithm.HS256)
@@ -44,6 +45,15 @@ public class JwtService {
                 .parseClaimsJws(token)
                 .getBody()
                 .get("tenantId", String.class);
+    }
+
+    public String extrairRole(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(getKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("role", String.class);
     }
 
     public boolean validarToken(String token) {

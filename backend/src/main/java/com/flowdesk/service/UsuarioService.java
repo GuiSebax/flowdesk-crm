@@ -1,8 +1,10 @@
 package com.flowdesk.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -21,12 +23,17 @@ public class UsuarioService {
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
 
+    @PreAuthorize("hasRole('ADMIN')")
     public Usuario criar(String nome, String email) {
 
         String tenantId = TenantContext.getTenant();
 
         if (tenantId == null) {
             throw new RuntimeException("Tenant não identificado. Faça login primeiro.");
+        }
+
+        if (repository.findByEmail(email).isPresent()) {
+            throw new RuntimeException("Email já cadastrado");
         }
 
         Usuario u = new Usuario();
@@ -38,6 +45,7 @@ public class UsuarioService {
         u.setAtivo(true);
         u.setCreatedAt(LocalDateTime.now());
         u.setUpdatedAt(LocalDateTime.now());
+        u.setRole("USER");
 
         return repository.save(u);
     }
@@ -50,7 +58,13 @@ public class UsuarioService {
             throw new RuntimeException("Senha inválida");
         }
 
-        return jwtService.gerarToken(usuario.getEmail(), usuario.getTenantId().toString());
+        return jwtService.gerarToken(usuario.getEmail(), usuario.getTenantId().toString(), usuario.getRole());
+    }
+
+    public List<Usuario> listar() {
+        String tenantId = TenantContext.getTenant();
+
+        return repository.findAllByTenantId(UUID.fromString(tenantId));
     }
 
 }
